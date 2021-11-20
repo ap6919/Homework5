@@ -62,7 +62,7 @@ def get_route(hostname):
     tracelist1 = [] #This is your list to use when iterating through each trace 
     tracelist2 = [] #This is your list to contain all traces
 
-    for ttl in range(1,MAX_HOPS):
+    for ttL in range(1,MAX_HOPS):
         for tries in range(TRIES):
             destAddr = gethostbyname(hostname)
             #Fill in start
@@ -71,7 +71,7 @@ def get_route(hostname):
             # Make a raw socket named mySocket
             #Fill in end
 
-            mySocket.setsockopt(IPPROTO_IP, IP_TTL, struct.pack('I', ttl))
+            mySocket.setsockopt(IPPROTO_IP, IP_TTL, struct.pack('I', ttL))
             mySocket.settimeout(TIMEOUT)
             try:
                 d = build_packet()
@@ -82,7 +82,7 @@ def get_route(hostname):
                 howLongInSelect = (time.time() - startedSelect)
                 if whatReady[0] == []: # Timeout
                     tracelist1.append("* * * Request timed out.")
-                    print(f"{ttl} Request Timed Out")
+                    print(f"{ttL} Request Timed Out")
                     #Fill in start
                     #You should add the list above to your all traces list
                     tracelist2.append(tracelist1)
@@ -91,7 +91,7 @@ def get_route(hostname):
                 timeReceived = time.time()
                 timeLeft = timeLeft - howLongInSelect
                 if timeLeft <= 0:
-                    print(f"{ttl} Request Timed Out")
+                    print(f"{ttL} Request Timed Out")
                     tracelist1.append("* * * Request timed out.")
                     #Fill in start TODO
                     #You should add the list above to your all traces list
@@ -106,6 +106,7 @@ def get_route(hostname):
                 types = struct.unpack("bbHHh", recvPacket[20:28])[0]
                 ipHeader = struct.unpack("! B B H H H B B H 4s 4s",recvPacket[:20])
                 sourceIP = '.'.join(map(str, ipHeader[-2]))
+                ttl = str(ttL)
                 #Fill in end
                 try: #try to fetch the hostname
                     #Fill in start TODO 
@@ -150,6 +151,7 @@ def get_route(hostname):
                     #You should add your responses to your lists here and return your list if your destination IP is met
                     print(f"{ttl} {timeTaken} {sourceIP} {sourceHost}")
                     if sourceIP == destAddr:
+                        print(f"{type(tracelist2)}: {tracelist2}")
                         return tracelist2
                     #Fill in end
                 else:
@@ -162,6 +164,7 @@ def get_route(hostname):
                 break
             finally:
                 mySocket.close()
+    print(f"{type(tracelist2)}: {tracelist2}")
     return(tracelist2)
 
 if __name__ == "__main__":
