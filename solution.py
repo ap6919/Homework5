@@ -82,7 +82,7 @@ def get_route(hostname):
                 whatReady = select.select([mySocket], [], [], timeLeft) #Creates a timer for socket, will throw timeout error
                 howLongInSelect = (time.time() - startedSelect) #decides how long select has been running
                 if whatReady[0] == []: # Timeout - If nothing is ready
-                    tracelist1.append(str(ttl)) #add which step it is
+                    tracelist1.append(str(ttL)) #add which step it is
                     tracelist1.append("*") # padding
                     tracelist1.append("Request timed out.") #Error
                     print(f"{ttL} Request Timed Out") 
@@ -94,7 +94,7 @@ def get_route(hostname):
                 timeReceived = time.time() #takes a time stamp of when it as received
                 timeLeft = timeLeft - howLongInSelect #decides if a packet has waited too long.
                 if timeLeft <= 0:
-                    tracelist1.append(str(ttl)) #add which step it is
+                    tracelist1.append(str(ttL)) #add which step it is
                     tracelist1.append("*") # padding
                     tracelist1.append("Request timed out.") #Error
                     print(f"{ttL} Request Timed Out") 
@@ -115,7 +115,7 @@ def get_route(hostname):
                 #Fill in end
                 try: #try to fetch the hostname
                     #Fill in start TODO 
-                    sourceHost = gethostbyaddr(sourceIP) #uses same library to get FQDN from ip 
+                    sourceHost = gethostbyaddr(sourceIP)[0] #uses same library to get FQDN from ip 
                     if not sourceHost:#make an error if it returns nothing
                         raise herror
                     #Fill in end
