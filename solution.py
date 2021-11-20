@@ -45,7 +45,8 @@ def build_packet():
 
     # Make the header in a similar way to the ping exercise.
     # Append checksum to the header.
-    myID = os.getpid() & 0xFFFF
+    #Create packet similar to homework 4
+    myID = os.getpid() & 0xFFFF 
     myChecksum = 0
     header = struct.pack("bbHHh", ICMP_ECHO_REQUEST, 0, myChecksum, myID, 1)
     data = struct.pack("d", time.time())
@@ -63,61 +64,59 @@ def get_route(hostname):
     tracelist2 = [] #This is your list to contain all traces
 
     for ttL in range(1,MAX_HOPS):
-        for tries in range(TRIES):
-            tracelist1 = []
-            destAddr = gethostbyname(hostname)
+        tracelist1 = [] # Reset list for this trace attempt
+        for tries in range(TRIES): 
+            destAddr = gethostbyname(hostname) #Gets ip address of traceroute query
             #Fill in start
-            icmp = getprotobyname("icmp")
-            mySocket = socket(AF_INET, SOCK_RAW, icmp)
             # Make a raw socket named mySocket
+            icmp = getprotobyname("icmp") 
+            mySocket = socket(AF_INET, SOCK_RAW, icmp) #create socket that accepts icmp requests
             #Fill in end
             mySocket.setsockopt(IPPROTO_IP, IP_TTL, struct.pack('I', ttL))
             mySocket.settimeout(TIMEOUT)
             try:
-                d = build_packet()
-                mySocket.sendto(d, (hostname, 0))
-                t=time.time()
-                startedSelect = time.time()
-                whatReady = select.select([mySocket], [], [], timeLeft)
-                howLongInSelect = (time.time() - startedSelect)
-                if whatReady[0] == []: # Timeout
-                    tracelist1.append(str(ttl))
-                    tracelist1.append("*")
-                    tracelist1.append("Request timed out.")
-                    print(f"{ttL} Request Timed Out")
+                d = build_packet() #builds packet
+                mySocket.sendto(d, (hostname, 0)) #sends packet to fqdn
+                t=time.time() #timestamps for no reason? might be for sending time but thats in packet
+                startedSelect = time.time() #timestamps again
+                whatReady = select.select([mySocket], [], [], timeLeft) #Creates a timer for socket, will throw timeout error
+                howLongInSelect = (time.time() - startedSelect) #decides how long select has been running
+                if whatReady[0] == []: # Timeout - If nothing is ready
+                    tracelist1.append(str(ttl)) #add which step it is
+                    tracelist1.append("*") # padding
+                    tracelist1.append("Request timed out.") #Error
+                    print(f"{ttL} Request Timed Out") 
                     #Fill in start
                     #You should add the list above to your all traces list
-                    tracelist2.append(tracelist1)
+                    tracelist2.append(tracelist1) # Adds Trace to our master list
                     #Fill in end
-                recvPacket, addr = mySocket.recvfrom(1024)
-                timeReceived = time.time()
-                timeLeft = timeLeft - howLongInSelect
+                recvPacket, addr = mySocket.recvfrom(1024) #gets a packet and return address
+                timeReceived = time.time() #takes a time stamp of when it as received
+                timeLeft = timeLeft - howLongInSelect #decides if a packet has waited too long.
                 if timeLeft <= 0:
-                    print(f"{ttL} Request Timed Out")
-                    tracelist1.append(str(ttl))
-                    tracelist1.append("*")
-                    tracelist1.append("Request timed out.")
-                    #Fill in start TODO
+                    tracelist1.append(str(ttl)) #add which step it is
+                    tracelist1.append("*") # padding
+                    tracelist1.append("Request timed out.") #Error
+                    print(f"{ttL} Request Timed Out") 
+                    #Fill in start
                     #You should add the list above to your all traces list
-                    tracelist2.append(tracelist1)
+                    tracelist2.append(tracelist1) # Adds Trace to our master list
                     #Fill in end
-            except timeout:
+            except timeout: #seems to only come from line 82 but does nothing
                 continue
 
-            else:
-                #Fill in start
-                #Fetch the icmp type from the IP packet
-                types = struct.unpack("bbHHh", recvPacket[20:28])[0]
-                sourceIP = addr[0]
-                ttl = str(ttL)
-                bytes = struct.calcsize("d")
-                timeSent = struct.unpack("d", recvPacket[28:28 + bytes])[0]
-                timeTaken = str(int((timeReceived-timeSent)*1000))+"ms"
+            else: # if there is a response
+                types = struct.unpack("bbHHh", recvPacket[20:28])[0] #Fetch the icmp type from the IP packet
+                sourceIP = addr[0] # _RetAddr form socket
+                ttl = str(ttL) # string to be correct output
+                bytes = struct.calcsize("d") #extrenuous from skeleton code
+                timeSent = struct.unpack("d", recvPacket[28:28 + bytes])[0] #extrenuous from skeleton code
+                timeTaken = str(int((timeReceived-t)*1000))+"ms" #based on t(line 80) and timeReceived(line 94)
                 #Fill in end
                 try: #try to fetch the hostname
                     #Fill in start TODO 
-                    sourceHost = gethostbyaddr(sourceIP)
-                    if not sourceHost:
+                    sourceHost = gethostbyaddr(sourceIP) #uses same library to get FQDN from ip 
+                    if not sourceHost:#make an error if it returns nothing
                         raise herror
                     #Fill in end
                 except herror:   #if the host does not provide a hostname
@@ -127,24 +126,24 @@ def get_route(hostname):
 
                 if types == 11: #ttl Expired
                     #Fill in start TODO
-                    tracelist2.append([ttl,timeTaken,sourceIP,sourceHost])
+                    tracelist2.append([ttl,timeTaken,sourceIP,sourceHost]) # append trace to master list
                     print(f"{ttl} {timeTaken} {sourceIP} {sourceHost}")
                     #You should add your responses to your lists here
                     #Fill in end
                 elif types == 3: #Host Unreachable
                     #Fill in start TODO
-                    tracelist2.append([ttl,timeTaken,sourceIP,sourceHost])
+                    tracelist2.append([ttl,timeTaken,sourceIP,sourceHost]) # append trace to master list
                     print(f"{ttl} {timeTaken} {sourceIP} {sourceHost}")
                     #You should add your responses to your lists here 
                     #Fill in end
                 elif types == 0: #Successful ping
                     #Fill in start TODO
-                    tracelist2.append([ttl,timeTaken,sourceIP,sourceHost])
+                    tracelist2.append([ttl,timeTaken,sourceIP,sourceHost]) # append trace to master list
                     #You should add your responses to your lists here and return your list if your destination IP is met
                     print(f"{ttl} {timeTaken} {sourceIP} {sourceHost}")
-                    if sourceIP == destAddr:
+                    if sourceIP == destAddr: #if ip from _RetAddr is equal to destAddr
                         print(f"{type(tracelist2)}: {tracelist2}")
-                        return tracelist2
+                        return tracelist2 #return final list
                     #Fill in end
                 else: #any other
                     #Fill in start TODO
