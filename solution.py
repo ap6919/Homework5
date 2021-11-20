@@ -71,18 +71,19 @@ def get_route(hostname):
             mySocket = socket(AF_INET, SOCK_RAW, icmp)
             # Make a raw socket named mySocket
             #Fill in end
-
             mySocket.setsockopt(IPPROTO_IP, IP_TTL, struct.pack('I', ttL))
             mySocket.settimeout(TIMEOUT)
             try:
                 d = build_packet()
                 mySocket.sendto(d, (hostname, 0))
-                t= time.time()
+                t=time.time()
                 startedSelect = time.time()
                 whatReady = select.select([mySocket], [], [], timeLeft)
                 howLongInSelect = (time.time() - startedSelect)
                 if whatReady[0] == []: # Timeout
-                    tracelist1.append("* * * Request timed out.")
+                    tracelist1.append(str(ttl))
+                    tracelist1.append("*")
+                    tracelist1.append("Request timed out.")
                     print(f"{ttL} Request Timed Out")
                     #Fill in start
                     #You should add the list above to your all traces list
@@ -93,29 +94,30 @@ def get_route(hostname):
                 timeLeft = timeLeft - howLongInSelect
                 if timeLeft <= 0:
                     print(f"{ttL} Request Timed Out")
-                    tracelist1.append("* * * Request timed out.")
+                    tracelist1.append(str(ttl))
+                    tracelist1.append("*")
+                    tracelist1.append("Request timed out.")
                     #Fill in start TODO
                     #You should add the list above to your all traces list
                     tracelist2.append(tracelist1)
                     #Fill in end
             except timeout:
+                print(error.with_traceback())
                 continue
 
             else:
                 #Fill in start
                 #Fetch the icmp type from the IP packet
                 types = struct.unpack("bbHHh", recvPacket[20:28])[0]
-                ipHeader = struct.unpack("! B B H H H B B H 4s 4s",recvPacket[:20])
-                sourceIP = '.'.join(map(str, ipHeader[-2]))
+                sourceIP = addr[0]
                 ttl = str(ttL)
                 bytes = struct.calcsize("d")
                 timeSent = struct.unpack("d", recvPacket[28:28 + bytes])[0]
-                print(timeSent)
-                timeTaken = str(round((time.time()-timeSent)*1000,0))+"ms"
+                timeTaken = str(int((timeReceived-timeSent)*1000))+"ms"
                 #Fill in end
                 try: #try to fetch the hostname
                     #Fill in start TODO 
-                    sourceHost = gethostbyaddr(sourceIP)[0]
+                    sourceHost = gethostbyaddr(sourceIP)
                     if not sourceHost:
                         raise herror
                     #Fill in end
