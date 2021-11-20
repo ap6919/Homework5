@@ -102,7 +102,6 @@ def get_route(hostname):
                     tracelist2.append(tracelist1)
                     #Fill in end
             except timeout:
-                print(error.with_traceback())
                 continue
 
             else:
@@ -126,20 +125,19 @@ def get_route(hostname):
                         sourceHost = "hostname not returnable"
                     #Fill in end
 
-                if types == 11:
+                if types == 11: #ttl Expired
                     #Fill in start TODO
                     tracelist2.append([ttl,timeTaken,sourceIP,sourceHost])
                     print(f"{ttl} {timeTaken} {sourceIP} {sourceHost}")
                     #You should add your responses to your lists here
                     #Fill in end
-                elif types == 3:
+                elif types == 3: #Host Unreachable
                     #Fill in start TODO
                     tracelist2.append([ttl,timeTaken,sourceIP,sourceHost])
                     print(f"{ttl} {timeTaken} {sourceIP} {sourceHost}")
-
                     #You should add your responses to your lists here 
                     #Fill in end
-                elif types == 0:
+                elif types == 0: #Successful ping
                     #Fill in start TODO
                     tracelist2.append([ttl,timeTaken,sourceIP,sourceHost])
                     #You should add your responses to your lists here and return your list if your destination IP is met
@@ -148,7 +146,7 @@ def get_route(hostname):
                         print(f"{type(tracelist2)}: {tracelist2}")
                         return tracelist2
                     #Fill in end
-                else:
+                else: #any other
                     #Fill in start TODO
                     tracelist2.append([ttl,timeTaken,sourceIP,sourceHost])
                     #If there is an exception/error to your if statements, you should append that to your list here
