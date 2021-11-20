@@ -66,7 +66,8 @@ def get_route(hostname):
         for tries in range(TRIES):
             destAddr = gethostbyname(hostname)
             #Fill in start
-            mySocket = socket(AF_INET, SOCK_RAW)
+            icmp = getprotobyname("icmp")
+            mySocket = socket(AF_INET, SOCK_RAW, icmp)
             # Make a raw socket named mySocket
             #Fill in end
 
